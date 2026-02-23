@@ -5,6 +5,8 @@
 #include <mutex>
 #include <thread>
 #include <filesystem>
+#include <condition_variable>
+#include <chrono>
 
 using namespace std;
 namespace fs = std::filesystem; // alias to avoid typing std::filesystem every time
@@ -85,18 +87,30 @@ class ProcessManager{
         std::queue<Task> t; 
         Cryptor cryptor;
         mutex mtx;
+        condition_variable cv;
+        bool stop = false;
 
     public:
         ProcessManager(char key): cryptor(key) {}
 
         void submit(Task task){
+            unique_lock<mutex> lock(mtx);
             t.push(task);
+            cv.notify_one();
+        }
+
+        void shutdown(){
+            unique_lock<mutex> lock(mtx);
+            stop = true;
+            cv.notify_all();
         }
 
         void process() {
             while(true) {
                 unique_lock<mutex> lock(mtx);
-                if(t.empty()){
+                cv.wait(lock, [this]{ return !t.empty() || stop; });
+
+                if(t.empty() && stop){
                     break;
                 }
                 
@@ -114,20 +128,39 @@ class ProcessManager{
 };
 
 int main(int argc, char* argv[]) {
+
+    if(argc < 4) {
+        cout << "Usage: ./encrypt <directory> <ENCRYPT|DECRYPT> <num_threads>" << endl;
+        return 1;
+    }
+
+    auto start = std::chrono::high_resolution_clock::now();
+
    char key = read_encryption_key(".env");
    
    ProcessManager pm(key);
 
    Action action = (string(argv[2]) == "ENCRYPT") ? Action::ENCRYPT : Action::DECRYPT;
 
+   int num_threads = stoi(argv[3]);
+   vector<thread> threads;
+
+   for(int i = 0; i<num_threads; i++){
+    threads.push_back(thread(&ProcessManager::process, &pm));
+   }
+
    for (auto& entry : fs::directory_iterator(argv[1])){
         pm.submit(Task(entry.path().string(), action));
    }
    
-   thread t1(&ProcessManager::process, &pm);
-   thread t2(&ProcessManager::process, &pm);
+   pm.shutdown();
 
-   t1.join();
-   t2.join();
+   for(auto& t : threads) {
+    t.join();
+    }
 
+
+   auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    cout << "Time with " << argv[3] << " threads: " << duration.count() << "ms" << endl;
 }
