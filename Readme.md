@@ -39,7 +39,7 @@ Had originally intended on following [Lovepreet Singh's](https://www.youtube.com
 - Parent waits for children via `waitpid()`
 
 ### Why a circular buffer for shared memory?
-`std::queue` uses internal heap pointers, which is meaningless across process boundaries. A fixed-size array with head/tail indices is entirely self-contained within the shared memory region.
+`std::queue` uses internal heap pointers, which is valid for all threads in mutlithreaded approach as they all  see the same heap, but meaningless across process boundaries. A fixed-size array with head/tail indices is entirely self-contained within the shared memory region.
 
 ## Benchmarks (1000 x 1KB files, 6-core & 12 logical processors machine)
 
@@ -53,7 +53,7 @@ Had originally intended on following [Lovepreet Singh's](https://www.youtube.com
 **Key findings:**
 - Both approaches scale similarly up to ~4 workers
 - Multiprocess pulls ahead at higher counts due to CPU cache isolation per process
-- Performance flatlines near core count (12) — context switching overhead dominates beyond this
+- Performance flatlines near core count (12) - context switching overhead dominates beyond this
 - Process creation overhead makes multiprocess slower at low worker counts
 
 ## Project Structure
