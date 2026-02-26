@@ -39,7 +39,7 @@ Had originally intended on following [Lovepreet Singh's](https://www.youtube.com
 - Parent waits for children via `waitpid()`
 
 ### Why a circular buffer for shared memory?
-`std::queue` uses internal heap pointers, which is valid for all threads in mutlithreaded approach as they all  see the same heap, but meaningless across process boundaries. A fixed-size array with head/tail indices is entirely self-contained within the shared memory region.
+`std::queue` uses internal heap pointers, which is valid for all threads in multithreaded approach as they all  see the same heap, but meaningless across process boundaries. A fixed-size array with head/tail indices is entirely self-contained within the shared memory region.
 
 ## Benchmarks (1000 x 1KB files, 6-core & 12 logical processors machine)
 
