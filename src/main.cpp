@@ -29,6 +29,10 @@ int main(int argc, char* argv[]) {
 
     char key = read_encryption_key(".env");
 
+    if(string(argv[2]) != "ENCRYPT" && string(argv[2]) != "DECRYPT") {
+    cout << "Error: action must be ENCRYPT or DECRYPT" << endl;
+    return 1;
+    }
     Action action = (string(argv[2]) == "ENCRYPT") ? Action::ENCRYPT : Action::DECRYPT;
 
     int num = stoi(argv[3]);//threads/processes
