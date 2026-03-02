@@ -7,6 +7,7 @@
 #include "envReader.hpp"
 #include "ProcessManager.hpp"
 #include "SharedQueue.hpp"
+#include "HybridManager.hpp"
 #include <thread>
 #include <filesystem>
 #include <chrono>
@@ -18,7 +19,8 @@ namespace fs = std::filesystem; // alias to avoid typing std::filesystem every t
 int main(int argc, char* argv[]) {
 
     if(argc < 5) {
-    cout << "Usage: ./encrypt <directory> <ENCRYPT|DECRYPT> <num> <threaded|multiprocess>" << endl;
+    cout << "Usage: ./encrypt <dir> <ENCRYPT|DECRYPT> <num> <threaded|multiprocess|hybrid>" << endl;
+    cout << "       ./encrypt <dir> <ENCRYPT|DECRYPT> <processes> <threads_per_process> hybrid" << endl;
     return 1;
     }
 
@@ -70,6 +72,28 @@ int main(int argc, char* argv[]) {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         cout << "Time with " << argv[3] << " processes: " << duration.count() << "ms" << endl;
+    
+    } else if (string(argv[5]) == "hybrid"){
+        int num_processes = stoi(argv[3]);
+        int num_threads = stoi(argv[4]);
+
+        HybridManager hm(key, num_processes, num_threads);
+        hm.start();
+
+        SharedTask t;
+
+        for (auto& entry : fs::directory_iterator(argv[1])){
+            strncpy(t.file_path, entry.path().string().c_str(), 255);
+            t.action = action;
+            hm.submit(t);
+        }
+
+        hm.shutdown();
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        cout << "Time with " << num_processes << " processes x " << num_threads << " threads: " << duration.count() << "ms" << endl;
+
     }
 
 }

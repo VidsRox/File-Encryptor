@@ -25,7 +25,7 @@ struct SharedQueue{
     int capacity;
     pthread_mutex_t mtx;/*std::mutex cannot be placed in shared memory 
                         and shared across processes. pthread_mutex_t 
-                        can — when initialized with PTHREAD_PROCESS_SHARED 
+                        can - when initialized with PTHREAD_PROCESS_SHARED 
                         attribute it works across processes.*/
     sem_t items;
     sem_t spaces;
@@ -61,8 +61,6 @@ class MultiProcessManager{
         void Start();
 
         void Shutdown();
-
-
 
 };
 
