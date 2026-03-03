@@ -8,6 +8,7 @@
 #include "ProcessManager.hpp"
 #include "SharedQueue.hpp"
 #include "HybridManager.hpp"
+#include "AsyncManager.hpp"
 #include <thread>
 #include <filesystem>
 #include <chrono>
@@ -77,7 +78,7 @@ int main(int argc, char* argv[]) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         cout << "Time with " << argv[3] << " processes: " << duration.count() << "ms" << endl;
     
-    } else if (string(argv[5]) == "hybrid"){
+    } else if (argc >= 6 && string(argv[5]) == "hybrid"){
         int num_processes = stoi(argv[3]);
         int num_threads = stoi(argv[4]);
 
@@ -98,6 +99,17 @@ int main(int argc, char* argv[]) {
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         cout << "Time with " << num_processes << " processes x " << num_threads << " threads: " << duration.count() << "ms" << endl;
 
+    } else if(string(argv[4]) == "async"){
+        AsyncManager am(key, num, action);
+
+        for(auto& entry : fs::directory_iterator(argv[1])) {
+        am.add_file(entry.path().string());
+    }
+        am.process();
+        
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        cout << "Time async: " << duration.count() << "ms" << endl;
     }
 
 }
