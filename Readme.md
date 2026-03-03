@@ -2,7 +2,7 @@
 
 A command-line file encryption tool built in C++ that demonstrates four parallel processing architectures: multithreading, multiprocessing, a hybrid model, and async I/O using `io_uring`. Built as an applied systems programming project to explore OS-level concurrency primitives and identify real performance bottlenecks empirically.
 
-Had originally intended on following [Lovepreet Singh's](https://www.youtube.com/@SinghDevHub) file encryptor project videos, but eventually decided that it would be better to work on it through trial and error and learning on the go. The videos were used only as reference.
+Had originally intended on following [Lovepreet Singh's](https://www.youtube.com/@SinghDevHub) file encryptor project videos, but eventually decided that it would be better to work on it through trial and error and learning on the go. The videos were used only as reference. Claude was instrumental in the learning process, helping debug issues and clarify systems programming concepts.
 
 ## Features
 
